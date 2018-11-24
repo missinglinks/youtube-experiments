@@ -10,7 +10,6 @@ from collections import defaultdict, Counter
 from apiclient.discovery import build
 from bs4 import BeautifulSoup
 
-
 YOUTUBE_VIDEO = "https://www.youtube.com/watch?v={id}"
 YOUTUBE_UPLOADS = "https://www.youtube.com/{}/videos?sort=dd&flow=grid" 
 YOUTUBE_EMBED = "https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v={}"
