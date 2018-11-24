@@ -85,9 +85,9 @@ def build_network(seed, channel, G, depth, precision=30, n=30):
 
 @click.command()
 @click.argument("video_id")
-@click.option("--precision","-p",default=30)
+@click.option("--precision","-p",default=20)
 @click.option("--depth", "-d", default=2)
-@click.option("-n", default=5)
+@click.option("-n", default=20)
 def recommended_channel_network(video_id, precision, depth, n):
     G = nx.DiGraph()
     channel, title = get_channel_name(video_id)
