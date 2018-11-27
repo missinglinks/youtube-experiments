@@ -10,11 +10,21 @@ from collections import defaultdict, Counter
 from apiclient.discovery import build
 from bs4 import BeautifulSoup
 
+from config import YOUTUBE_API_KEY
+
 YOUTUBE_VIDEO = "https://www.youtube.com/watch?v={id}"
 YOUTUBE_UPLOADS = "https://www.youtube.com/{}/videos?sort=dd&flow=grid" 
 YOUTUBE_EMBED = "https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v={}"
 
-
+def normalize(slug):
+    youtube = build("youtube", "v3", developerKey=YOUTUBE_API_KEY)
+    if "channel/" in slug:
+        channel_id = slug.replace("channel/", "").strip()
+    elif "user/" in slug:
+        channel_id = get_channel_id(yt, slug.replace("user/", "").strip())
+    else:
+        print("invalid channel slug")
+        return None
 
 def get_latest_vids(slug):
     resp = requests.get(YOUTUBE_UPLOADS.format(slug))
@@ -83,16 +93,27 @@ def build_network(seed, channel, G, depth, precision=30, n=30):
                 build_network(video_id, data[0], G, depth=depth-1, precision=precision, n=n)
 
 @click.command()
-@click.argument("video_id")
+@click.argument("seed")
 @click.option("--precision","-p",default=20)
 @click.option("--depth", "-d", default=2)
 @click.option("-n", default=20)
-def recommended_channel_network(video_id, precision, depth, n):
+def recommended_channel_network(seed, precision, depth, n):
     G = nx.DiGraph()
-    channel, title = get_channel_name(video_id)
-    build_network(video_id, channel, G, depth=depth, precision=precision, n=n)
 
-    network_file = os.path.join("data", "{}_{}_{}.graphml".format(channel, title[:30], datetime.now().isoformat()[:19].replace(":","_")))
+    if "channel" or "user" in seed:
+        channel = normalize(seed)
+        res = []
+        videos = get_latest_vids(seed)
+        for i, video in enumerate(videos[:20]):
+            print(i, video)
+            build_network(video, channel, G, depth=n, precision=precision, n=n)
+
+        network_file = os.path.join("data", "{}_{}.graphml".format(channel, datetime.now().isoformat()[:19].replace(":","_")))
+    else:
+        channel, title = get_channel_name(seed)
+        build_network(seed, channel, G, depth=depth, precision=precision, n=n)
+
+        network_file = os.path.join("data", "{}_{}_{}.graphml".format(channel, title[:30], datetime.now().isoformat()[:19].replace(":","_")))
     nx.write_graphml(G, network_file)
 
 if __name__ == "__main__":
