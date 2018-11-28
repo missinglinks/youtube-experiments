@@ -20,8 +20,10 @@ def normalize(slug):
     youtube = build("youtube", "v3", developerKey=YOUTUBE_API_KEY)
     if "channel/" in slug:
         channel_id = slug.replace("channel/", "").strip()
+        return channel_id
     elif "user/" in slug:
         channel_id = get_channel_id(yt, slug.replace("user/", "").strip())
+        return channel_id
     else:
         print("invalid channel slug")
         return None
